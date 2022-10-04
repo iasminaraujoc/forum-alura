@@ -9,6 +9,11 @@ import br.com.alura.forum.modelo.Topico;
 import br.com.alura.forum.repository.CursoRepository;
 import br.com.alura.forum.repository.TopicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -50,14 +55,22 @@ public class TopicosController {
     private CursoRepository cursoRepository;
 
     //usando "method" o spring entende que estamos falando de métodos com mesmo valor, mas requisições diferentes
+    //é um correspondente ao requestbody do post
     //@RequestMapping(value = "/topicos", method = RequestMethod.GET)
     @GetMapping
-    public List<TopicoDto> lista(String nomeCurso){
+    //usar o requestparam diz que é obrigatorio passar o parametro, o atributo required=false diz que é opcional
+    public Page<TopicoDto> lista(@RequestParam(required = false) String nomeCurso,
+                                 @PageableDefault(sort="id",direction = Sort.Direction.ASC, page=0, size=10) Pageable paginacao){
+
+        //usa o PageableDefault só se o usuário não digitar os parametros da paginacao
+        //url: localhost:8080/topicos?page=0&size=10&sort=id,asc&sort=dataCriacao,desc
+
         if(nomeCurso == null){
-            List<Topico> topicos = topicoRepository.findAll();
+            //o findAll com pageable não retorna uma lista, mas sim uma Page, para dar detalhes para o usuário
+            Page<Topico> topicos = topicoRepository.findAll(paginacao);
             return TopicoDto.converter(topicos);
         } else {
-            List<Topico> topicos = topicoRepository.findByTitulo(nomeCurso);
+            Page<Topico> topicos = topicoRepository.findByTitulo(nomeCurso, paginacao);
             //findByCursoNome ou findByCurso_Nome ele reconhece tbm
             return TopicoDto.converter(topicos);
         }

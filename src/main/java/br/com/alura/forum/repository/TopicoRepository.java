@@ -1,6 +1,8 @@
 package br.com.alura.forum.repository;
 
 import br.com.alura.forum.modelo.Topico;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,7 +13,7 @@ public interface TopicoRepository extends JpaRepository<Topico, Long> {
 
     // a classe fica vazia pq já foi tudo herdado de JPaRepository
     //padrão de nomenclatura spring: findByNomeAtributo, ele gera a query
-    List<Topico> findByTitulo(String nomeCurso);
+    Page<Topico> findByTitulo(String nomeCurso, Pageable paginacao);
 
     //se quiser usar outra nomenclatura, tem que usar a anotação @Query e montar a query em jpql
 }
