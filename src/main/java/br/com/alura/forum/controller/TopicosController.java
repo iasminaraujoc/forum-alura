@@ -9,6 +9,8 @@ import br.com.alura.forum.modelo.Topico;
 import br.com.alura.forum.repository.CursoRepository;
 import br.com.alura.forum.repository.TopicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,11 +61,16 @@ public class TopicosController {
     //@RequestMapping(value = "/topicos", method = RequestMethod.GET)
     @GetMapping
     //usar o requestparam diz que é obrigatorio passar o parametro, o atributo required=false diz que é opcional
+    @Cacheable(value = "listaDeTopicos") //o value é tipo um id de cada cacheable da aplicação
     public Page<TopicoDto> lista(@RequestParam(required = false) String nomeCurso,
                                  @PageableDefault(sort="id",direction = Sort.Direction.ASC, page=0, size=10) Pageable paginacao){
 
         //usa o PageableDefault só se o usuário não digitar os parametros da paginacao
         //url: localhost:8080/topicos?page=0&size=10&sort=id,asc&sort=dataCriacao,desc
+
+        //para habilitar o log do hibernate, vamos no application.properties e adicionamos
+        //as propriedades de show_sql e format_sql
+        //spring guarda os valores que executamos no cache e avalia se tem o resultado ou não
 
         if(nomeCurso == null){
             //o findAll com pageable não retorna uma lista, mas sim uma Page, para dar detalhes para o usuário
@@ -86,6 +93,9 @@ public class TopicosController {
     @Transactional
     //utilizar @valid para falar para o spring rodar as validações do BeanValidation.
     // Se der errado, devolve o código 400. Porém, um json gigantesco e complicado. Podemos simplificá-lo!
+    @CacheEvict(value = "listaDeTopicos", allEntries = true) //mostrando que tem que limpar o cacheable listadetopicos
+                                                             // toda vez que atualizar um registro, pois o conteúdo já
+                                                             // carregado é diferente do criado/atualizado
     public ResponseEntity<TopicoDto> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder){
     //public void cadastrar(@RequestBody TopicoForm form){
         Topico topico = form.converter(cursoRepository);
@@ -119,6 +129,7 @@ public class TopicosController {
     //não precisa chamar update para o jpa, pq ele já entende automaticamente que é pra atualizar
     //porém, tem que usar essa anotação
     @Transactional
+    @CacheEvict(value = "listaDeTopicos", allEntries = true)
     public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form){
         Optional<Topico> optional = topicoRepository.findById(id);
 
@@ -132,6 +143,7 @@ public class TopicosController {
 
     @DeleteMapping("/{id}")
     @Transactional
+    @CacheEvict(value = "listaDeTopicos", allEntries = true)
     public ResponseEntity remover(@PathVariable Long id){
 
         Optional<Topico> optional = topicoRepository.findById(id);
@@ -143,5 +155,12 @@ public class TopicosController {
         return ResponseEntity.notFound().build();
 
     }
+
+    //boas práticas no uso de cache
+    //usamos para melhorar performance
+    //na teoria, poderíamos colocar a aplicação toda em cache
+    //na prática, não é recomendado. Porque tdo o processo pode fazer piorar a performance
+    //tabelas que quase nunca são atualizadas, estáveis, podem ficar atualizadas.
+    //Ficar limpando e atualizando toda hora o cache pode piorar a performance.
 
 }

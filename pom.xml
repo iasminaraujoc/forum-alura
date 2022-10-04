@@ -34,6 +34,18 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
+		<!--estamos em ambiente de desenvolvimento. Por isso, não adicionaremos
+		nenhuma dependência relacionada ao provedor de cache. Por padrão, o spring
+		usa um cache em memória com um hashmap, que não é recomendado para um
+		ambiente de produção, mas pode ser usado no nosso contexto.
+		-->
+
+
  <!--H2 é um banco de dados em memória-->
 		<dependency>
 			<groupId>com.h2database</groupId>
