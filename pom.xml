@@ -44,7 +44,10 @@
 		usa um cache em memória com um hashmap, que não é recomendado para um
 		ambiente de produção, mas pode ser usado no nosso contexto.
 		-->
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 
  <!--H2 é um banco de dados em memória-->
 		<dependency>

@@ -163,4 +163,6 @@ public class TopicosController {
     //tabelas que quase nunca são atualizadas, estáveis, podem ficar atualizadas.
     //Ficar limpando e atualizando toda hora o cache pode piorar a performance.
 
+    //geralmente, há um controle de acessos sobre quem acessa quais recursos
+
 }
