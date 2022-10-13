@@ -61,6 +61,7 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/topicos").permitAll()
                 .antMatchers(HttpMethod.GET, "/topicos/*").permitAll()
                 .antMatchers(HttpMethod.POST, "/auth").permitAll() //liberar url de login para logar
+                .antMatchers(HttpMethod.GET, "/actuator/**").permitAll() //permitido em ambiente de testes, mas não em produção
                 .anyRequest().authenticated()
                 //.and().formLogin(); - tirando sessions
                 .and().csrf().disable() //csrf - cross site request forgery - tipo de ataque hacker que pode ocorrer
