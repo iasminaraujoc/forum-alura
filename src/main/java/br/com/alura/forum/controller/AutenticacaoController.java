@@ -40,4 +40,9 @@ public class AutenticacaoController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    //o cliente da API armazena o token em algum lugar - geralmente um cookie
+    //nas próximas requisições, ele deve levar esse token
+    //com o cabeçalho "Authorization" e o token
+    //pegar o token e autenticar o cliente
 }
