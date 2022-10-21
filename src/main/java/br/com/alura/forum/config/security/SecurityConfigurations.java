@@ -70,8 +70,10 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
     }
 
     //configura recursos estáticos(js, css, imagens,etc.)
+    //swagger mexe aqui, porque dispara várias coisas
     @Override
     public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/**.html", "/v2/api-docs", "/webjars/**","/configuration/**", "/swagger-resources/**");
     }
 
     //obtendo o hash de 123456
