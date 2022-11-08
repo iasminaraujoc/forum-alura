@@ -16,4 +16,9 @@ public class ForumApplication {
 		SpringApplication.run(ForumApplication.class, args);
 	}
 
+	//para rodar no profile dev, editar config do ForumApplication passando o parâmetro:
+	//-Dspring.profiles.active=dev
+	//lembrar de aplicar e dar ok
+	//se não configurar, o padrão é default, que é rodar todas as classes
+
 }

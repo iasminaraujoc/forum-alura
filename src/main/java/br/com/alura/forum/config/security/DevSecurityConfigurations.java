@@ -1,8 +1,5 @@
 package br.com.alura.forum.config.security;
 
-//ao invés de colocarmos as configurações no application.properties,
-//adicionamos numa classe por ser mais dinâmico
-
 import br.com.alura.forum.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,9 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @EnableWebSecurity
 @Configuration
-@Profile({"prod","test"})
-//padrão: bloquear tudo
-public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
+@Profile("dev")
+public class DevSecurityConfigurations extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -35,53 +31,32 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
     private UsuarioRepository usuarioRepository;
 
     @Override
-    @Bean //deixando o AuthenticationManager injetável
+    @Bean
     protected AuthenticationManager authenticationManager() throws Exception {
         return super.authenticationManager();
     }
 
-    //configura a parte de autenticação
-    //autenticação tradicional = não é uma boa alternativa para o modelo rest
-    //modelo session(tradicional) -> cada sessão tem um id, criada na memória. O navegador armazena isso como um cookie
-    //consome espaço de memória, se o servidor cai, perdemos tudo
-    //o servidor deve ser serverless, no modelo rest
-    //com o spring, podemos implementar o modelo stateless.
-    //não se cria sessions, mas o servidor nao entende se ta logado ou não.
-    //para ele saber disso, o cliente deve passar um parâmetro, uma informação pra se identificar
-    //isso é papel do jwt, json web token
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        //o userdetailservice diz qual é a classe que tem as conf. de autenticação
-        //o password encoder é quem transforma a senha do database em hash
         auth.userDetailsService(autenticacaoService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
-    //configura autorização, perfil de acesso, quem usa qual url
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/topicos").permitAll()
                 .antMatchers(HttpMethod.GET, "/topicos/*").permitAll()
-                .antMatchers(HttpMethod.POST, "/auth").permitAll() //liberar url de login para logar
-                .antMatchers(HttpMethod.GET, "/actuator/**").permitAll() //permitido em ambiente de testes, mas não em produção
-                .antMatchers(HttpMethod.DELETE, "/topicos/*").hasRole("MODERADOR") //só moderadores apagam tópicos
+                .antMatchers(HttpMethod.POST, "/auth").permitAll()
+                .antMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                 .anyRequest().authenticated()
-                //.and().formLogin(); - tirando sessions
-                .and().csrf().disable() //csrf - cross site request forgery - tipo de ataque hacker que pode ocorrer
+                .and().csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().addFilterBefore(new AutenticacaoViaTokenFilter(tokenService, usuarioRepository), UsernamePasswordAuthenticationFilter.class);
     }
 
-    //configura recursos estáticos(js, css, imagens,etc.)
-    //swagger mexe aqui, porque dispara várias coisas
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers("/**.html", "/v2/api-docs", "/webjars/**","/configuration/**", "/swagger-resources/**");
     }
-
-    //obtendo o hash de 123456
-//    public static void main(String[] args) {
-//        System.out.println(new BCryptPasswordEncoder().encode("123456"));
-//    }
 
 }
